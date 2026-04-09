@@ -16,17 +16,18 @@ export default function BlessedHillAdmin({ onLogout }) {
   const [selectedTour, setSelectedTour] = useState(null);
   useEffect(() => { fetchAll(); }, []);
 
-  const fetchAll = async () => {
+const fetchAll = async () => {
     setLoading(true);
     const [{ data: rev }, { data: apps }, { data: trs }] = await Promise.all([
       supabase.from("reviews").select("*").order("created_at", { ascending: false }),
       supabase.from("applications").select("*").order("created_at", { ascending: false }),
-      supabase.from("tours").select("*").order("created_at", { ascending: false }),    if (rev) setReviews(rev);
+      supabase.from("tours").select("*").order("created_at", { ascending: false }),
+    ]);
+    if (rev) setReviews(rev);
     if (apps) setApplications(apps);
     if (trs) setTours(trs);
     setLoading(false);
   };
-
   const approveReview = async (id) => {
     const { error } = await supabase.from("reviews").update({ approved: true }).eq("id", id);
     if (!error) setReviews(prev => prev.map(r => r.id === id ? { ...r, approved: true } : r));

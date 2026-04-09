@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "./supabaseClient";
+import logo from "./assets/bwr.png";
 
 const NAV_LINKS = ["Home", "Services", "Gallery", "Reviews", "Schedule a Tour", "Career", "Privacy Policy"];
 
@@ -23,27 +26,27 @@ const RATING_SUMMARY = {
 };
 
 const PLATFORMS = [
-  { name: "BlessedHillAdultFamilyHome.com", score: "5.0", reviews: "5 reviews", color: "#2e6da4" },
+  { name: "BlessedHillAdultFamilyHome", score: "5.0", reviews: "5 reviews", color: "#2e6da4" },
 ];
 
 const REVIEWS = [
   {
-    id: 1, stars: 5, size: "large",
+    id: -1, stars: 5, size: "large",
     quote: "I was immediately taken by how warm and inviting the atmosphere was. Anne, who oversees the home, is an embodiment of hospitality and kindness. Her friendly demeanor and genuine affection for the members are noticeable, making it a warm and nurturing environment for anyone in need of adult family home services. Keep it up Anne!!",
     author: "Hayley Matthews", relation: "Verified Reviewer", source: "Direct", date: "Jan 2022",
   },
   {
-    id: 2, stars: 5, size: "medium",
+    id: -2, stars: 5, size: "medium",
     quote: "Very Patient and Loving Staff who care for my mother who has dementia. So glad she is in such a loving home.",
     author: "Cheryl Ehrenheim", relation: "Family of resident", source: "Direct", date: "Jan 2017",
   },
   {
-    id: 3, stars: 5, size: "medium",
+    id: -3, stars: 5, size: "medium",
     quote: "I recently had the opportunity to visit Blessed Hill Adult Family Home and was genuinely impressed with their comprehensive approach to adult care. My mother is happy to be here.",
     author: "Jackie M.", relation: "Family of resident", source: "Direct", date: "Feb 2022",
   },
   {
-    id: 4, stars: 5, size: "small",
+    id: -4, stars: 5, size: "small",
     quote: "Organized, nice and clean floors. Located in a quiet neighborhood.",
     author: "Emilio Albeit", relation: "Verified Reviewer", source: "Direct", date: "Jul 2023",
   },
@@ -65,6 +68,11 @@ function Stars({ n, size = 14 }) {
 
 export default function BlessedHillReviews({ navigate = () => {} }) {
   const [scrolled, setScrolled] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [userReviews, setUserReviews] = useState([]);
+  const [newReview, setNewReview] = useState({ author:"", relation:"", stars:0, quote:"" });
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [formError, setFormError] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [visibleIds, setVisibleIds] = useState(new Set());
   const cardRefs = useRef({});
@@ -92,25 +100,95 @@ export default function BlessedHillReviews({ navigate = () => {} }) {
   }, []);
 
   const vis = id => visibleIds.has(String(id));
+  const allReviews = [...REVIEWS, ...userReviews];
+  const totalReviews = allReviews.length;
+  const overallRating = totalReviews === 0 ? 0 : (allReviews.reduce((sum, r) => sum + r.stars, 0) / totalReviews).toFixed(1);
+  const breakdown = [5,4,3,2,1].map(star => ({
+    stars: star,
+    count: allReviews.filter(r => r.stars === star).length
+  }));
+  // Load reviews from Supabase on page load
+  useEffect(() => {
+    const fetchReviews = async () => {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("approved", true)
+    .order("created_at", { ascending: false });
+  console.log("Fetched:", data, "Error:", error);
+if (!error && data) setUserReviews(data.filter(r => r.approved));};
+    fetchReviews();
+
+    // Real-time listener — new reviews appear instantly
+    const channel = supabase
+      .channel("reviews-channel")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "reviews" }, (payload) => {
+        if (payload.new.approved) setUserReviews(prev => [payload.new, ...prev]);
+      })
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, []);
+
+  const submitReview = async () => {
+    if (!newReview.author.trim()) return setFormError("Please enter your name.");
+    if (!newReview.quote.trim()) return setFormError("Please write your review.");
+    if (newReview.stars === 0) return setFormError("Please select a star rating.");
+    const review = {
+      author: newReview.author,
+      relation: newReview.relation,
+      stars: newReview.stars,
+      quote: newReview.quote,
+      date: new Date().toLocaleDateString("en-US", { month:"short", year:"numeric" }),
+    };
+   const { data, error } = await supabase.from("reviews").insert([review]).select();
+    if (error) return setFormError("Something went wrong. Please try again.");
+// Review saved to Supabase — will show after admin approval    setNewReview({ author:"", relation:"", stars:0, quote:"" });
+    setFormSubmitted(true);
+    setFormError("");
+    setTimeout(() => { setFormSubmitted(false); setShowForm(false); }, 3000);
+  };
 
   return (
-    <div style={{ fontFamily:"'Playfair Display',Georgia,serif", background:"#faf8f4", minHeight:"100vh", overflowX:"hidden" }}>
+    <div style={{ fontFamily:"'Playfair Display',Georgia,serif", background:"#faf8f4", minHeight:"100vh"}}>
       <style>{`
+       body { overflow-x: hidden; }
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
         :root{
           --bd:#1a3a5c;--bm:#2e6da4;--bs:#5b9bd5;
           --cr:#faf8f4;--cd:#f0ece2;--wh:#ffffff;
           --tm:#4a6278;--tl:#8a9dae;
-          --gd:#c9a84c;--gl:#fdf5e0;--br:rgba(30,80,140,0.09);--rd:16px;
+          --gd:#c9a84c;--gl:#fdf5e0;--br:rgba(255, 255, 255, 1);--rd:16px;
         }
         .sans{font-family:'DM Sans',sans-serif}
 
         /* NAV */
-        .nav{position:fixed;top:0;left:0;right:0;z-index:300;background:rgba(250,248,244,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--br);transition:box-shadow .3s;padding:0 48px}
-        .nav.scrolled{box-shadow:0 2px 20px rgba(30,80,140,.07)}
-        .nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px}
-        .nlm{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--bd)}
+        .nav {
+          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+          background: rgba(255,255,255,0.97);
+          backdrop-filter: blur(12px);
+          box-shadow: 0 2px 24px rgba(30,80,140,0.10);
+          transition: background 0.4s ease, box-shadow 0.4s ease;
+          padding: 0 48px;
+        }
+        .nav.scrolled {
+          background: rgba(255,255,255,0.97);
+          backdrop-filter: blur(12px);
+          box-shadow: 0 2px 24px rgba(30,80,140,0.10);
+        }
+        .nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:80px;height:72px}
+        .nav-logo { display: flex; flex-direction: column; }
+        .nav-logo-main {
+          font-family: 'Playfair Display', serif;
+          font-size: 26px; font-weight: 800; line-height: 1.1; letter-spacing: -0.3px;
+          color: var(--bd);
+        }
+        .nav-logo-sub {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px; letter-spacing: 1.5px; text-transform: uppercase;
+          color: var(--bs);
+        }        .nlm{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--bd)}
         .nls{font-family:'DM Sans',sans-serif;font-size:10px;color:var(--bs);letter-spacing:1.5px;text-transform:uppercase}
         .nl{display:flex;gap:28px;list-style:none}
         .nl a{font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;color:var(--tm);text-decoration:none;transition:color .2s}
@@ -299,52 +377,134 @@ export default function BlessedHillReviews({ navigate = () => {} }) {
         .fade-in{animation:fadeUp .7s ease both}
         .fi1{animation-delay:.1s}.fi2{animation-delay:.2s}.fi3{animation-delay:.3s}
         .hamburger{
-          display:none;background:none;border:none;
-          font-size:22px;cursor:pointer;color:var(--bd);
-          padding:6px;align-items:center;justify-content:center;
+          display:none; background:none; border:none;
+          font-size:22px; cursor:pointer; color:var(--bd);
+          padding:8px; align-items:center; justify-content:center;
+          min-width:44px; min-height:44px; border-radius:8px;
+        }
+        .mobile-menu{
+          position:fixed; top:0; left:0; right:0; bottom:0;
+          z-index:100;
+          background:rgba(13,33,55,0.98);
+          backdrop-filter:blur(12px);
+          display:flex; flex-direction:column;
+          align-items:center; justify-content:flex-start;
+          gap:8px;
+          overflow-y:auto;
+          padding:80px 24px 40px;
+        }
+        .mobile-menu-close{
+          position:absolute; top:20px; right:20px;
+          background:none; border:none;
+          font-size:24px; color:rgba(255,255,255,0.7);
+          cursor:pointer; padding:8px;
+          min-width:44px; min-height:44px;
+          display:flex; align-items:center; justify-content:center;
+        }
+        .mobile-link{
+          font-family:'DM Sans',sans-serif; font-size:20px; font-weight:400;
+          color:rgba(255,255,255,0.85); text-decoration:none;
+          padding:14px 32px; border-radius:12px;
+          width:100%; max-width:320px; text-align:center;
+          transition:background 0.2s, color 0.2s;
+        }
+        .mobile-link:hover{background:rgba(255,255,255,0.08);color:white}
+        .mobile-link.active-link{color:var(--gd);font-weight:500}
+
         /* RESPONSIVE */
-        @media(max-width:1100px){.reviews-masonry{columns:2}.summary-inner{grid-template-columns:auto 1fr;grid-template-rows:auto auto}.platforms{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr)}}
+        @media(max-width:1024px){
+          .page-body{grid-template-columns:1fr;gap:48px}
+          .sidebar{position:static}
+        }
         @media(max-width:900px){
-          .nav{padding:0 24px}.nl,.ncta{display:none}
+          .nav{padding:0 20px}
+          .nl,.ncta{display:none}
           .hamburger{display:flex}
-          .hero{padding:120px 24px 0}
-          .summary-section{padding:60px 24px 0}
-          .summary-inner{grid-template-columns:1fr;gap:40px}
-          .platforms{grid-template-columns:1fr}
-          .reviews-section{padding:56px 24px 60px}
-          .reviews-masonry{columns:1}
-          .leave-section{padding:64px 24px}
-          .leave-inner{grid-template-columns:1fr;gap:40px}
-          .cta-band{padding:64px 24px}
+          .nav-inner{height:64px;gap:12px}
+          .nav-logo-img{height:52px !important}
+          .nav-logo-main{font-size:16px}
+          .nav-logo-sub{font-size:10px}
+          .page-header{padding:100px 24px 64px}
+          .header-inner{grid-template-columns:1fr;gap:40px}
+          .why-grid{grid-template-columns:1fr 1fr}
+          .page-body{padding:48px 24px 60px}
+          .field-row{grid-template-columns:1fr}
           .footer{padding:44px 24px 24px}
           .footer-inner{grid-template-columns:1fr;gap:32px}
           .fbot{flex-direction:column;gap:6px;text-align:center}
+          .reviews-section{padding:40px 20px 60px}
+          .reviews-masonry{columns:1}
+          .reviews-header{flex-direction:column;align-items:flex-start;gap:12px}
+          .summary-section{padding:48px 20px 0}
+          .summary-inner{grid-template-columns:1fr;gap:40px}
+          .hero{padding:80px 20px 0}
+          .hero-quote{font-size:18px}
+          .hero-source-badge{margin-left:0;margin-top:12px}
+          .hero-attr{flex-direction:column;align-items:flex-start;gap:12px}
+          .rc-quote{font-size:14px}
+          .rc-foot{flex-wrap:wrap;gap:8px}
+          .rc-date{margin-left:0}
+          .leave-section{padding:56px 20px}
+          .leave-inner{grid-template-columns:1fr;gap:40px}
         }
+        @media(max-width:540px){
+          .nav-inner{height:56px;gap:8px}
+          .nav-logo-img{height:44px !important}
+          .rc{padding:20px}
+        }
+        @media(max-width:480px){.why-grid{grid-template-columns:1fr}}
       `}</style>
 
       {/* NAV */}
       <nav className={`nav${scrolled?" scrolled":""}`}>
         <div className="nav-inner">
-          <div onClick={()=>navigate("Home")}style={{cursor:"pointer"}}><div className="nlm">Blessed Hill</div><div className="nls sans">Adult Family Home</div></div>
+          <div onClick={()=>navigate("Home")} style={{display:"flex", alignItems:"center", gap:"0px", cursor:"pointer", marginLeft:"-15px"}}>
+          <img src={logo} alt="Blessed Hill" className="nav-logo-img" style={{height:"140px", width:"auto"}} />            <div>
+              <div className="nav-logo-main">Blessed Hill</div>
+              <div className="nav-logo-sub sans">Adult Family Home</div>
+            </div>
+          </div>
           <ul className="nl">
-            {NAV_LINKS.map(l=><li key={l}><a href="#" className={l==="Reviews"?"active":""} onClick={e=>{e.preventDefault();navigate(l);}}>{l}</a></li>)}
+            {NAV_LINKS.map((label) => (
+              <li key={label}>
+                <a href="#" className={label==="Reviews"?"active":""} onClick={e=>{e.preventDefault();navigate(label);}}>
+                  {label}
+                </a>
+              </li>
+            ))}
           </ul>
-          <button className="ncta sans" onClick={()=>navigate("Schedule a Tour")}>Schedule a Tour</button>
-          <button className="hamburger" onClick={()=>setMenuOpen(o=>!o)} aria-label="Menu">
-  {menuOpen ? "✕" : "☰"}
-  {menuOpen && (
-  <div className="mobile-menu">
-    {NAV_LINKS.map(l=>(
-      <a key={l} href="#" className="mobile-link sans" onClick={e=>{e.preventDefault();navigate(l);setMenuOpen(false);}}>
-        {l}
-      </a>
-    ))}
-  </div>
-)}
-</button>
+          
+          <button className="hamburger" style={{marginLeft:"auto"}} onClick={()=>setMenuOpen(o=>!o)} aria-label="Menu">
+            {menuOpen ? "✕" : "☰"}
+          </button>
         </div>
       </nav>
-
+      <AnimatePresence>
+      {menuOpen && (
+        <motion.div 
+          className="mobile-menu"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+        >
+          <button className="mobile-menu-close" onClick={()=>setMenuOpen(false)} aria-label="Close menu">✕</button>
+          {NAV_LINKS.map((l, i) => (
+            <motion.a 
+              key={l} 
+              href="#" 
+              className={`mobile-link sans${l==="Reviews" ? " active-link" : ""}`} 
+              onClick={e=>{e.preventDefault();navigate(l);setMenuOpen(false);}}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.3 }}
+            >
+              {l}
+            </motion.a>
+          ))}
+        </motion.div>
+      )}
+      </AnimatePresence>
       {/* HERO QUOTE */}
       <header className="hero">
         <div className="hero-inner">
@@ -372,18 +532,18 @@ export default function BlessedHillReviews({ navigate = () => {} }) {
         <div className="summary-inner">
           {/* Big score */}
           <div className="score-block fade-in">
-            <div className="score-num">{RATING_SUMMARY.overall}</div>
+            <div className="score-num">{overallRating}</div>
             <div className="score-stars"><Stars n={5} size={20} /></div>
-            <div className="score-label sans">out of 5 · {RATING_SUMMARY.total} reviews</div>
+            <div className="score-label sans">{totalReviews} reviews</div>
           </div>
 
           {/* Breakdown bars */}
           <div className="breakdown fade-in fi1">
-            {RATING_SUMMARY.breakdown.map(row => (
+            {breakdown.map(row => (
               <div key={row.stars} className="bk-row">
                 <span className="bk-label sans">{row.stars}★</span>
                 <div className="bk-track">
-                  <div className="bk-fill" style={{width:`${(row.count/RATING_SUMMARY.total)*100}%`}} />
+                  <div className="bk-fill" style={{width:`${totalReviews === 0 ? 0 : (row.count/totalReviews)*100}%`}} />
                 </div>
                 <span className="bk-count sans">{row.count}</span>
               </div>
@@ -451,8 +611,30 @@ export default function BlessedHillReviews({ navigate = () => {} }) {
               </div>
             );
           })}
+          
+          {userReviews.map((r) => (
+  <div key={`db-${r.id}`} className="rc visible" style={{opacity:1, transform:"none"}}>
+              <div className="rc-top">
+                <Stars n={r.stars} size={13} />
+                <span className="rc-source sans" style={{background:"#EEF4FB", color:"#2e6da4"}}>
+                  <span className="rc-src-dot" style={{background:"#2e6da4"}} />
+                  Direct
+                </span>
+              </div>
+              <p className="rc-quote">{r.quote}</p>
+              <div className="rc-foot">
+                <div className="rc-avatar" style={{background:"#2e6da4"}}>{r.author[0]}</div>
+                <div>
+                  <div className="rc-name sans">{r.author}</div>
+                  <div className="rc-rel sans">{r.relation}</div>
+                </div>
+                <span className="rc-date sans">{r.date}</span>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
+        
 
       {/* LEAVE A REVIEW */}
       <section className="leave-section">
@@ -465,16 +647,42 @@ export default function BlessedHillReviews({ navigate = () => {} }) {
             </p>
           </div>
           <div className="leave-platforms">
-            {PLATFORMS.map(p => (
-              <a key={p.name} href="https://blessedhilladultfamilyhome.com/reviews" className="lp-btn" target="_blank" rel="noreferrer">
-                <span className="lp-dot2" style={{background:p.color}} />
-                <div>
-                  <div className="lp-name sans">Submit your review on our website</div>
-                  <div className="lp-sub sans">{p.score} stars · {p.reviews}</div>
-                </div>
-                <span className="lp-arrow">→</span>
-              </a>
-            ))}
+            <button className="btn-gold sans" onClick={()=>setShowForm(o=>!o)}>
+              {showForm ? "Cancel" : "✍ Write a Review"}
+            </button>
+            {showForm && (
+              <div style={{marginTop:24,background:"white",border:"1.5px solid rgba(30,80,140,0.09)",borderRadius:16,padding:28}}>
+                {formSubmitted ? (
+                <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,color:"#1a6644",fontWeight:600,textAlign:"center",padding:"16px 0",lineHeight:1.6}}>✓ Thank you! Your review has been received and will appear on the page once approved.</p>                ) : (
+                  <>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
+                      <div>
+                        <label style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:1,textTransform:"uppercase",color:"#8a9dae",display:"block",marginBottom:6}}>Your Name *</label>
+                        <input style={{width:"100%",fontFamily:"'DM Sans',sans-serif",fontSize:14,border:"1.5px solid rgba(30,80,140,0.09)",borderRadius:10,padding:"10px 14px",outline:"none"}} placeholder="e.g. Jane Smith" value={newReview.author} onChange={e=>setNewReview(p=>({...p,author:e.target.value}))} />
+                      </div>
+                      <div>
+                        <label style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:1,textTransform:"uppercase",color:"#8a9dae",display:"block",marginBottom:6}}>Your Relation</label>
+                        <input style={{width:"100%",fontFamily:"'DM Sans',sans-serif",fontSize:14,border:"1.5px solid rgba(30,80,140,0.09)",borderRadius:10,padding:"10px 14px",outline:"none"}} placeholder="e.g. Family of resident" value={newReview.relation} onChange={e=>setNewReview(p=>({...p,relation:e.target.value}))} />
+                      </div>
+                    </div>
+                    <div style={{marginBottom:14}}>
+                      <label style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:1,textTransform:"uppercase",color:"#8a9dae",display:"block",marginBottom:8}}>Star Rating *</label>
+                      <div style={{display:"flex",gap:8}}>
+                        {[1,2,3,4,5].map(s=>(
+                          <span key={s} onClick={()=>setNewReview(p=>({...p,stars:s}))} style={{fontSize:28,cursor:"pointer",color:newReview.stars>=s?"#c9a84c":"#ddd",lineHeight:1}}>★</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{marginBottom:14}}>
+                      <label style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:1,textTransform:"uppercase",color:"#8a9dae",display:"block",marginBottom:6}}>Your Review *</label>
+                      <textarea style={{width:"100%",fontFamily:"'DM Sans',sans-serif",fontSize:14,border:"1.5px solid rgba(30,80,140,0.09)",borderRadius:10,padding:"10px 14px",outline:"none",minHeight:90,resize:"vertical"}} placeholder="Share your experience..." value={newReview.quote} onChange={e=>setNewReview(p=>({...p,quote:e.target.value}))} />
+                    </div>
+                    {formError && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#c0392b",marginBottom:10}}>⚠ {formError}</p>}
+                    <button className="btn-gold sans" onClick={submitReview}>Submit Review →</button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </section>

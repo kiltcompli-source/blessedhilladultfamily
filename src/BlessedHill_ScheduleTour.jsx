@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "./supabaseClient";
+import logo from "./assets/bwr.png";
 
 const NAV_LINKS = ["Home", "Services", "Gallery", "Reviews", "Schedule a Tour", "Career", "Privacy Policy"];
 const TIME_SLOTS = ["9:00 AM","9:30 AM","10:00 AM","10:30 AM","11:00 AM","11:30 AM","1:00 PM","1:30 PM","2:00 PM","2:30 PM","3:00 PM","3:30 PM"];
@@ -71,7 +74,22 @@ export default function BlessedHillTour({ navigate = () => {} }) {
 
   const next   = () => { if (!validate()) return; setDirection("forward"); setStep(s => s + 1); };
   const back   = () => { setDirection("back");    setStep(s => s - 1); };
-  const submit = () => { setDirection("forward"); setStep(4); };
+  const submit = async () => {
+    const { error } = await supabase.from("tours").insert([{
+      first_name: form.firstName,
+      last_name: form.lastName,
+      email: form.email,
+      phone: form.phone,
+      relationship: form.relationship,
+      tour_type: form.tourType,
+      tour_date: form.date ? form.date.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "",
+      tour_time: form.time,
+      notes: form.notes,
+      how_heard: form.howHeard,
+    }]);
+    if (error) { alert("Something went wrong. Please try again."); return; }
+    setDirection("forward"); setStep(4);
+  };
   const progress = step <= 3 ? ((step - 1) / 3) * 100 : 100;
 
   const formatDate = (d) => d ? `${DAY_NAMES[d.getDay()]}, ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}` : "—";
@@ -89,9 +107,43 @@ export default function BlessedHillTour({ navigate = () => {} }) {
         }
         .sans{font-family:'DM Sans',sans-serif}
         /* NAV */
-        .nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(250,248,244,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--br);transition:box-shadow .3s;padding:0 48px}
-        .nav.scrolled{box-shadow:0 2px 20px rgba(30,80,140,0.07)}
-        .nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px}
+       .nav {
+          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+          background: rgba(255,255,255,0.97);
+          backdrop-filter: blur(12px);
+          box-shadow: 0 2px 24px rgba(30,80,140,0.10);
+          transition: background 0.4s ease, box-shadow 0.4s ease;
+          padding: 0 48px;
+        }
+        .nav.scrolled {
+          background: rgba(255,255,255,0.97);
+          backdrop-filter: blur(12px);
+          box-shadow: 0 2px 24px rgba(30,80,140,0.10);
+        }
+        .nav-inner {
+          max-width: 1280px; margin: 0 auto;
+          display: flex; align-items: center; justify-content: space-between;
+          gap: 80px;
+          height: 72px;
+        }
+        .nav-logo { display: flex; flex-direction: column; }
+        .nav-logo-main {
+          font-family: 'Playfair Display', serif;
+          font-size: 26px;
+          font-weight: 800;
+          line-height: 1.1;
+          letter-spacing: -0.3px;
+          color: var(--bd); /* #1a3a5c */
+        }
+
+        /* "Adult Family Home" — DM Sans, small caps */
+        .nav-logo-sub {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+          color: var(--bs); /* #5b9bd5 */
+        }       
         .nlm{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--bd)}
         .nls{font-family:'DM Sans',sans-serif;font-size:10px;color:var(--bs);letter-spacing:1.5px;text-transform:uppercase}
         .nav-links{display:flex;gap:28px;list-style:none}
@@ -201,15 +253,20 @@ export default function BlessedHillTour({ navigate = () => {} }) {
         .ap a{color:var(--gd);text-decoration:none;font-weight:500;font-size:14px}
         .ap a:hover{text-decoration:underline}
        .hamburger{
-       display:none;background:none;border:none;
-        font-size:22px;cursor:pointer;color:var(--bd);
-        padding:6px;align-items:center;justify-content:center;
-       
+          display:none;background:none;border:none;
+          font-size:22px;cursor:pointer;color:var(--bd);
+          padding:8px;align-items:center;justify-content:center;
+          min-width:44px;min-height:44px;border-radius:8px;
+        }
         /* RESPONSIVE */
         @media(max-width:900px){
+          .nav{padding:0 20px}
           .nav-links,.nav-cta{display:none}
           .hamburger{display:flex}
-          .nav-links,.nav-cta{display:none}
+          .nav-inner{height:64px;gap:12px}
+          .nav-logo-img{height:52px !important}
+          .nav-logo-main{font-size:16px}
+          .nav-logo-sub{font-size:10px}
           .shell{grid-template-columns:1fr}
           .ip{display:none}
           .fp{padding:36px 24px 60px}
@@ -217,6 +274,39 @@ export default function BlessedHillTour({ navigate = () => {} }) {
           .dg{grid-template-columns:repeat(5,1fr)}
           .tg{grid-template-columns:repeat(3,1fr)}
         }
+        @media(max-width:540px){
+          .nav-inner{height:56px;gap:8px}
+          .nav-logo-img{height:44px !important}
+        }
+        /* MOBILE MENU — full-screen overlay (matches Gallery) */
+        .mobile-menu{
+          position:fixed; top:0; left:0; right:0; bottom:0;
+          z-index:100;
+          background:rgba(13,33,55,0.98);
+          backdrop-filter:blur(12px);
+          display:flex; flex-direction:column;
+          align-items:center; justify-content:flex-start;
+          gap:8px;
+          overflow-y:auto;
+          padding:80px 24px 40px;
+        }
+        .mobile-menu-close{
+          position:absolute;top:20px;right:20px;
+          background:none;border:none;
+          font-size:24px;color:rgba(255,255,255,0.7);
+          cursor:pointer;padding:8px;
+          min-width:44px;min-height:44px;
+          display:flex;align-items:center;justify-content:center;
+        }
+        .mobile-link{
+          font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;
+          color:rgba(255,255,255,0.85);text-decoration:none;
+          padding:14px 32px;border-radius:12px;
+          width:100%;max-width:320px;text-align:center;
+          transition:background 0.2s,color 0.2s;
+        }
+        .mobile-link:hover{background:rgba(255,255,255,0.08);color:white}
+        .mobile-link.active-link{color:var(--gd);font-weight:500}
         @media(max-width:480px){
           .dg{grid-template-columns:repeat(4,1fr)}
           .tg{grid-template-columns:repeat(2,1fr)}
@@ -225,27 +315,56 @@ export default function BlessedHillTour({ navigate = () => {} }) {
       `}</style>
 
       {/* NAV */}
-      <nav className={`nav${scrolled ? " scrolled" : ""}`}>
+      <nav className={`nav${scrolled?" scrolled":""}`}>
         <div className="nav-inner">
-          <div onClick={()=>navigate("Home")}style={{cursor:"pointer"}}><div className="nlm">Blessed Hill</div><div className="nls sans">Adult Family Home</div></div>
+          <div onClick={()=>navigate("Home")} style={{display:"flex", alignItems:"center", gap:"0px", cursor:"pointer", marginLeft:"-15px"}}>
+            <img src={logo} alt="Blessed Hill" className="nav-logo-img" style={{height:"140px", width:"auto"}} />
+            <div>
+              <div className="nav-logo-main">Blessed Hill</div>
+              <div className="nav-logo-sub sans">Adult Family Home</div>
+            </div>
+          </div>
           <ul className="nav-links">
-            {NAV_LINKS.map(l => <li key={l}><a href="#" className={l==="Schedule a Tour"?"active":""} onClick={e=>{e.preventDefault();navigate(l);}}>{l}</a></li>)}
+            {NAV_LINKS.map((label) => (
+              <li key={label}>
+                <a href="#" className={label==="Schedule a Tour"?"active":""} onClick={e=>{e.preventDefault();navigate(label);}}>
+                  {label}
+                </a>
+              </li>
+            ))}
           </ul>
-          <button className="nav-cta sans" onClick={()=>navigate("Schedule a Tour")}>253-397-4881</button>
+          
           <button className="hamburger" onClick={()=>setMenuOpen(o=>!o)} aria-label="Menu">
-  {menuOpen ? "✕" : "☰"}
-  {menuOpen && (
-  <div className="mobile-menu">
-    {NAV_LINKS.map(l=>(
-      <a key={l} href="#" className="mobile-link sans" onClick={e=>{e.preventDefault();navigate(l);setMenuOpen(false);}}>
-        {l}
-      </a>
-    ))}
-  </div>
-)}
-</button>
+            {menuOpen ? "✕" : "☰"}
+          </button>
         </div>
       </nav>
+      <AnimatePresence>
+      {menuOpen && (
+      <motion.div 
+        className="mobile-menu"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+      >
+        <button className="mobile-menu-close" onClick={()=>setMenuOpen(false)} aria-label="Close menu">✕</button>
+        {NAV_LINKS.map((l, i) => (
+          <motion.a 
+            key={l} 
+            href="#" 
+            className={`mobile-link sans${l==="Schedule a Tour" ? " active-link" : ""}`} 
+            onClick={e=>{e.preventDefault();navigate(l);setMenuOpen(false);}}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05, duration: 0.3 }}
+          >
+            {l}
+          </motion.a>
+        ))}
+      </motion.div>
+      )}
+      </AnimatePresence>
 
       {/* SHELL */}
       <div className="shell">

@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import logo from "./assets/bwr.png";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -159,7 +161,7 @@ export default function BlessedHillServices({ navigate = () => {} }) {
           }
         });
       },
-      { threshold: 0.3, rootMargin: "-80px 0px -40% 0px" }
+      { threshold: 0.05, rootMargin: "0px" }
     );
     const timer = setTimeout(() => {
       Object.values(sectionRefs.current).forEach((el) => el && observer.observe(el));
@@ -180,7 +182,7 @@ export default function BlessedHillServices({ navigate = () => {} }) {
   };
 
   return (
-    <div style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "#fafafa", color: "#1a2b3c", minHeight: "100vh", overflowX: "hidden" }}>
+    <div style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "#fafafa", color: "#1a2b3c", minHeight: "100vh" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -189,6 +191,7 @@ export default function BlessedHillServices({ navigate = () => {} }) {
           --blue-deep:  #1a3a5c;
           --blue-mid:   #2e6da4;
           --blue-soft:  #5b9bd5;
+          --bs:         #5b9bd5;
           --white:      #ffffff;
           --cream:      #faf8f4;
           --text-dark:  #1a2b3c;
@@ -198,28 +201,37 @@ export default function BlessedHillServices({ navigate = () => {} }) {
           --border:     rgba(30,80,140,0.09);
         }
         .sans { font-family: 'DM Sans', sans-serif; }
-
+        body { overflow-x: hidden; }
         /* ── NAV ───────────────────────────────────────────────────────── */
-        .nav {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-          background: rgba(250,250,250,0.96); backdrop-filter: blur(12px);
-          border-bottom: 1px solid var(--border);
-          transition: box-shadow 0.3s;
+
+         .nav {
+          position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+          background: rgba(255,255,255,0.97); backdrop-filter: blur(12px);
+          transition: background 0.4s ease, box-shadow 0.4s ease;
           padding: 0 48px;
         }
-        .nav.scrolled { box-shadow: 0 2px 20px rgba(30,80,140,0.08); }
+        .nav.scrolled { box-shadow: 0 2px 24px rgba(30,80,140,0.10); }
         .nav-inner {
-          max-width: 1340px; margin: 0 auto;
+          max-width: 1280px; margin: 0 auto;
           display: flex; align-items: center; justify-content: space-between;
+          gap: 80px;
           height: 72px;
         }
         .nav-logo-main {
           font-family: 'Playfair Display', serif;
-          font-size: 18px; font-weight: 700; color: var(--blue-deep); line-height: 1.1;
+          font-size: 26px;
+          font-weight: 800;
+          line-height: 1.1;
+          letter-spacing: -0.3px;
+          color: var(--bd); /* #1a3a5c */
         }
+
         .nav-logo-sub {
-          font-family: 'DM Sans', sans-serif; font-size: 10px;
-          color: var(--blue-soft); letter-spacing: 1.5px; text-transform: uppercase;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+          color: var(--bs); /* #5b9bd5 */
         }
         .nav-links { display: flex; gap: 28px; list-style: none; }
         .nav-links a {
@@ -346,8 +358,8 @@ export default function BlessedHillServices({ navigate = () => {} }) {
           padding: 80px 0 80px 64px;
           border-bottom: 1px solid var(--border);
           position: relative;
-          opacity: 0; transform: translateY(24px);
-          transition: opacity 0.6s ease, transform 0.6s ease;
+          opacity: 0; transform: translateY(12px);
+          transition: opacity 0.025s ease, transform 0.025s ease;
         }
         .service-section.visible { opacity: 1; transform: translateY(0); }
 
@@ -564,10 +576,40 @@ export default function BlessedHillServices({ navigate = () => {} }) {
         .fade-in-1 { animation-delay: 0.1s; }
         .fade-in-2 { animation-delay: 0.25s; }
         .fade-in-3 { animation-delay: 0.4s; }
-      .hamburger{
-        display:none;background:none;border:none;
-        font-size:22px;cursor:pointer;color:var(--bd);
-        padding:6px;align-items:center;justify-content:center;
+                .hamburger{
+            display:none; background:none; border:none;
+            font-size:22px; cursor:pointer; color:var(--blue-deep);
+            padding:8px; align-items:center; justify-content:center;
+            min-width:44px; min-height:44px; border-radius:8px;
+          }
+          .mobile-menu{
+            position:fixed; top:0; left:0; right:0; bottom:0;
+            z-index:100;
+            background:rgba(13,33,55,0.98);
+            backdrop-filter:blur(12px);
+            display:flex; flex-direction:column;
+            align-items:center; justify-content:flex-start;
+            gap:8px;
+            overflow-y:auto;
+            padding:80px 24px 40px;
+          }
+          .mobile-menu-close{
+            position:absolute; top:20px; right:20px;
+            background:none; border:none;
+            font-size:24px; color:rgba(255,255,255,0.7);
+            cursor:pointer; padding:8px;
+            min-width:44px; min-height:44px;
+            display:flex; align-items:center; justify-content:center;
+          }
+          .mobile-link{
+            font-family:'DM Sans',sans-serif; font-size:20px; font-weight:400;
+            color:rgba(255,255,255,0.85); text-decoration:none;
+            padding:14px 32px; border-radius:12px;
+            width:100%; max-width:320px; text-align:center;
+            transition:background 0.2s, color 0.2s;
+          }
+          .mobile-link:hover{background:rgba(255,255,255,0.08);color:white}
+          .mobile-link.active-link{color:var(--gold);font-weight:500}
         /* ── RESPONSIVE ────────────────────────────────────────────────── */
         @media (max-width: 1024px) {
           .page-body              { grid-template-columns: 1fr; }
@@ -578,6 +620,8 @@ export default function BlessedHillServices({ navigate = () => {} }) {
           .section-top            { grid-template-columns: 1fr; gap: 24px; }
         }
         @media (max-width: 900px) {
+          .nav-logo-main { font-size: 16px; }
+          .nav-logo-sub  { font-size: 10px; }
           .nav-links,.nav-cta{display:none}
           .hamburger{display:flex}
           .nav-links, .nav-cta    { display: none; }
@@ -593,36 +637,67 @@ export default function BlessedHillServices({ navigate = () => {} }) {
           .footer                 { padding: 48px 24px 24px; }
           .footer-inner           { grid-template-columns: 1fr; gap: 36px; }
           .footer-base            { flex-direction: column; gap: 8px; text-align: center; }
+          .nav { padding: 0 20px; }
+          .nav-inner { height: 64px; gap: 12px; }
+          .nav-logo-img { height: 52px !important; }
         }
+          @media (max-width: 540px) {
+          .nav-inner { height: 56px; gap: 8px; }
+          .nav-logo-img { height: 44px !important; }
+        }
+           @media(max-width:480px){.why-grid{grid-template-columns:1fr}}
       `}</style>
 
-      {/* ── NAV ────────────────────────────────────────────────────────── */}
-      <nav className={`nav${scrolled ? " scrolled" : ""}`}>
+      {/* NAV */}
+      <nav className={`nav${scrolled?" scrolled":""}`}>
         <div className="nav-inner">
-          <div onClick={()=>navigate("Home")}style={{cursor:"pointer"}}>
-            <div className="nav-logo-main">Blessed Hill</div>
-            <div className="nav-logo-sub sans">Adult Family Home</div>
+          <div onClick={()=>navigate("Home")} style={{display:"flex", alignItems:"center", gap:"0px", cursor:"pointer", marginLeft:"-15px"}}>
+          <img src={logo} alt="Blessed Hill" className="nav-logo-img" style={{height:"140px", width:"auto"}} />            <div>
+              <div className="nav-logo-main">Blessed Hill</div>
+              <div className="nav-logo-sub sans">Adult Family Home</div>
+            </div>
           </div>
           <ul className="nav-links">
-            {NAV_LINKS.map((l) => (
-              <li key={l}><a href="#" className={l === "Services" ? "active" : ""} onClick={e=>{e.preventDefault();navigate(l);}}>{l}</a></li>
+            {NAV_LINKS.map((label) => (
+              <li key={label}>
+                <a href="#" className={label==="Services"?"active":""} onClick={e=>{e.preventDefault();navigate(label);}}>
+                  {label}
+                </a>
+              </li>
             ))}
           </ul>
-          <button className="nav-cta sans" onClick={()=>navigate("Schedule a Tour")}>Schedule a Tour</button>
-          <button className="hamburger" onClick={()=>setMenuOpen(o=>!o)} aria-label="Menu">
-           {menuOpen ? "✕" : "☰"}
-          {menuOpen && (
-  <div className="mobile-menu">
-    {NAV_LINKS.map(l=>(
-      <a key={l} href="#" className="mobile-link sans" onClick={e=>{e.preventDefault();navigate(l);setMenuOpen(false);}}>
-        {l}
-      </a>
-    ))}
-  </div>
-)}
-</button>
+         
+          <button className="hamburger" style={{marginLeft:"auto"}} onClick={()=>setMenuOpen(o=>!o)} aria-label="Menu">            {menuOpen ? "✕" : "☰"}
+          </button>
         </div>
       </nav>
+      <AnimatePresence>
+      {menuOpen && (
+  <motion.div 
+    className="mobile-menu"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.25, ease: "easeOut" }}
+  >
+    <button className="mobile-menu-close" onClick={()=>setMenuOpen(false)} aria-label="Close menu">✕</button>
+    {NAV_LINKS.map((l, i) => (
+      <motion.a 
+        key={l} 
+        href="#" 
+        className={`mobile-link sans${l==="Services" ? " active-link" : ""}`} 
+        onClick={e=>{e.preventDefault();navigate(l);setMenuOpen(false);}}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: i * 0.05, duration: 0.3 }}
+      >
+        {l}
+      </motion.a>
+    ))}
+  </motion.div>
+)}
+      </AnimatePresence>
+
 
       {/* ── TOP BAND ───────────────────────────────────────────────────── */}
       <header className="top-band">

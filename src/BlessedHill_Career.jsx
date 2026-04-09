@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "./supabaseClient";
+import logo from "./assets/bwr.png";
 
 const NAV_LINKS = ["Home", "Services", "Gallery", "Reviews", "Schedule a Tour", "Career", "Privacy Policy"];
 
@@ -56,8 +59,24 @@ export default function BlessedHillCareer({ navigate = () => {} }) {
     return Object.keys(e).length === 0;
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (!validate()) return;
+    const { error } = await supabase.from("applications").insert([{
+      first_name: form.firstName,
+      last_name: form.lastName,
+      email: form.email,
+      phone: form.phone,
+      address: form.address,
+      position: form.position === "Other" ? form.positionOther : form.position,
+      position_other: form.positionOther,
+      hours: form.hours,
+      worked_before: form.workedBefore,
+      additional_info: form.additionalInfo,
+    }]);
+    if (error) {
+      alert("Something went wrong. Please try again.");
+      return;
+    }
     setSubmitted(true);
   };
 
@@ -78,8 +97,9 @@ export default function BlessedHillCareer({ navigate = () => {} }) {
         /* NAV */
         .nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(247,245,240,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--br);transition:box-shadow .3s;padding:0 48px}
         .nav.scrolled{box-shadow:0 2px 20px rgba(30,80,140,.07)}
-        .nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px}
-        .nlm{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--bd)}
+        .nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:80px;height:72px}
+        .nav-logo-main{font-family:'Playfair Display',serif;font-size:26px;font-weight:800;line-height:1.1;letter-spacing:-0.3px;color:var(--bd)}
+        .nav-logo-sub{font-family:'DM Sans',sans-serif;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;color:var(--bs)}        .nlm{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--bd)}
         .nls{font-family:'DM Sans',sans-serif;font-size:10px;color:var(--bs);letter-spacing:1.5px;text-transform:uppercase}
         .nl{display:flex;gap:28px;list-style:none}
         .nl a{font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;color:var(--tm);text-decoration:none;transition:color .2s}
@@ -219,51 +239,119 @@ export default function BlessedHillCareer({ navigate = () => {} }) {
         .fl a:hover{color:white}
         .fbot{max-width:1280px;margin:0 auto;padding-top:22px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:rgba(255,255,255,.28)}
         .hamburger{
-            display:none;background:none;border:none;
-              font-size:22px;cursor:pointer;color:var(--bd);
-          padding:6px;align-items:center;justify-content:center;
-        /* RESPONSIVE */
-        @media(max-width:1024px){
-          .page-body{grid-template-columns:1fr;gap:48px}
-          .sidebar{position:static}
-        }
-        @media(max-width:900px){
-          .nav{padding:0 24px}.nl,.ncta{display:none}
-          .hamburger{display:flex}
-          .page-header{padding:120px 24px 64px}
-          .header-inner{grid-template-columns:1fr;gap:40px}
-          .why-grid{grid-template-columns:1fr 1fr}
-          .page-body{padding:48px 24px 60px}
-          .field-row{grid-template-columns:1fr}
-          .footer{padding:44px 24px 24px}
-          .footer-inner{grid-template-columns:1fr;gap:32px}
-          .fbot{flex-direction:column;gap:6px;text-align:center}
-        }
-        @media(max-width:480px){.why-grid{grid-template-columns:1fr}}
+        display:none; background:none; border:none;
+        font-size:22px; cursor:pointer; color:var(--bd);
+        padding:8px; align-items:center; justify-content:center;
+        min-width:44px; min-height:44px; border-radius:8px;
+      }
+      .mobile-menu{
+        position:fixed; top:0; left:0; right:0; bottom:0;
+        z-index:100;
+        background:rgba(13,33,55,0.98);
+        backdrop-filter:blur(12px);
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:flex-start;
+        gap:8px;
+        overflow-y:auto;
+        padding:80px 24px 40px;
+      }
+      .mobile-menu-close{
+        position:absolute; top:20px; right:20px;
+        background:none; border:none;
+        font-size:24px; color:rgba(255,255,255,0.7);
+        cursor:pointer; padding:8px;
+        min-width:44px; min-height:44px;
+        display:flex; align-items:center; justify-content:center;
+      }
+      .mobile-link{
+        font-family:'DM Sans',sans-serif; font-size:20px; font-weight:400;
+        color:rgba(255,255,255,0.85); text-decoration:none;
+        padding:14px 32px; border-radius:12px;
+        width:100%; max-width:320px; text-align:center;
+        transition:background 0.2s, color 0.2s;
+      }
+      .mobile-link:hover{background:rgba(255,255,255,0.08);color:white}
+      .mobile-link.active-link{color:var(--gd);font-weight:500}
+
+      /* RESPONSIVE */
+      @media(max-width:1024px){
+        .page-body{grid-template-columns:1fr;gap:48px}
+        .sidebar{position:static}
+      }
+      @media(max-width:900px){
+        .nav{padding:0 20px}
+        .nl,.ncta{display:none}
+        .hamburger{display:flex}
+        .nav-inner{height:64px;gap:12px}
+        .nav-logo-img{height:52px !important}
+        .nav-logo-main{font-size:16px}
+        .nav-logo-sub{font-size:10px}
+        .page-header{padding:100px 24px 64px}
+        .header-inner{grid-template-columns:1fr;gap:40px}
+        .why-grid{grid-template-columns:1fr 1fr}
+        .page-body{padding:48px 24px 60px}
+        .field-row{grid-template-columns:1fr}
+        .footer{padding:44px 24px 24px}
+        .footer-inner{grid-template-columns:1fr;gap:32px}
+        .fbot{flex-direction:column;gap:6px;text-align:center}
+      }
+      @media(max-width:540px){
+        .nav-inner{height:56px;gap:8px}
+        .nav-logo-img{height:44px !important}
+      }
+      @media(max-width:480px){.why-grid{grid-template-columns:1fr}}
       `}</style>
 
       {/* NAV */}
       <nav className={`nav${scrolled?" scrolled":""}`}>
         <div className="nav-inner">
-          <div><div className="nlm"onClick={()=>navigate("Home")}style={{cursor:"pointer"}}>Blessed Hill</div><div className="nls sans"onClick={()=>navigate("Home")}style={{cursor:"pointer"}}>Adult Family Home</div></div>
+          <div onClick={()=>navigate("Home")} style={{display:"flex", alignItems:"center", gap:"0px", cursor:"pointer", marginLeft:"-15px"}}>
+            <img src={logo} alt="Blessed Hill" className="nav-logo-img" style={{height:"140px", width:"auto"}} />
+            <div>
+              <div className="nav-logo-main">Blessed Hill</div>
+              <div className="nav-logo-sub sans">Adult Family Home</div>
+            </div>
+          </div>
           <ul className="nl">
-            {NAV_LINKS.map(l=><li key={l}><a href="#" className={l==="Career"?"active":""} onClick={e=>{e.preventDefault();navigate(l);}}>{l}</a></li>)}
+            {NAV_LINKS.map(l=>(
+              <li key={l}>
+                <a href="#" className={l==="Career"?"active":""} onClick={e=>{e.preventDefault();navigate(l);}}>
+                  {l}
+                </a>
+              </li>
+            ))}
           </ul>
-          <button className="ncta sans">253-397-4881</button>
-          <button className="hamburger" onClick={()=>setMenuOpen(o=>!o)} aria-label="Menu">
-  {menuOpen ? "✕" : "☰"}
-  {menuOpen && (
-  <div className="mobile-menu">
-    {NAV_LINKS.map(l=>(
-      <a key={l} href="#" className="mobile-link sans" onClick={e=>{e.preventDefault();navigate(l);setMenuOpen(false);}}>
-        {l}
-      </a>
-    ))}
-  </div>
-)}
-</button>
+          
+      <button className="hamburger" style={{marginLeft:"auto"}} onClick={()=>setMenuOpen(o=>!o)} aria-label="Menu">            {menuOpen ? "✕" : "☰"}
+          </button>
         </div>
       </nav>
+      <AnimatePresence>
+      {menuOpen && (
+      <motion.div 
+        className="mobile-menu"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+      >
+        <button className="mobile-menu-close" onClick={()=>setMenuOpen(false)} aria-label="Close menu">✕</button>
+        {NAV_LINKS.map((l, i) => (
+          <motion.a 
+            key={l} 
+            href="#" 
+            className={`mobile-link sans${l==="Career" ? " active-link" : ""}`} 
+            onClick={e=>{e.preventDefault();navigate(l);setMenuOpen(false);}}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05, duration: 0.3 }}
+          >
+            {l}
+          </motion.a>
+        ))}
+      </motion.div>
+      )}
+      </AnimatePresence>
 
       {/* PAGE HEADER */}
       <header className="page-header">

@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import logo from "./assets/bwr.png";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -111,9 +113,10 @@ export default function BlessedHillHome({ navigate = () => {} }) {
 
         /* ── NAV ───────────────────────────────────────────────────────── */
         .nav {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+          position: fixed; top: 0; left: 0; right: 0; z-index: 300;
           transition: background 0.4s ease, box-shadow 0.4s ease;
           padding: 0 48px;
+          will-change: transform;
         }
         .nav.scrolled {
           background: rgba(255,255,255,0.97);
@@ -121,33 +124,37 @@ export default function BlessedHillHome({ navigate = () => {} }) {
           box-shadow: 0 2px 24px rgba(30,80,140,0.10);
         }
         .nav-inner {
-          max-width: 1200px; margin: 0 auto;
+          max-width: 1280px; margin: 0 auto;
           display: flex; align-items: center; justify-content: space-between;
-          height: 80px;
+          gap: 80px;
+          height: 72px;
         }
         .nav-logo { display: flex; flex-direction: column; }
 
-        /* FIX 5: Logo text was --blue-deep (dark navy) rendered on the dark transparent
-           hero — completely invisible. Now it starts white and transitions to navy on scroll. */
+        
         .nav-logo-main {
           font-family: 'Playfair Display', serif;
-          font-size: 20px; font-weight: 700; line-height: 1.1; letter-spacing: -0.3px;
-          color: white;
-          transition: color 0.4s ease;
+          font-size: 26px;
+          font-weight: 800;
+          line-height: 1.1;
+          letter-spacing: -0.3px;
+          color: white; /* #1a3a5c */
         }
-        .nav.scrolled .nav-logo-main { color: var(--blue-deep); }
 
+       .nav.scrolled .nav-logo-main { color: var(--blue-deep); }
         .nav-logo-sub {
           font-family: 'DM Sans', sans-serif;
-          font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+          font-size: 14px;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
           color: rgba(255,255,255,0.6);
-          transition: color 0.4s ease;
         }
         .nav.scrolled .nav-logo-sub { color: var(--blue-soft); }
-
-        .nav-links { display: flex; gap: 32px; list-style: none; }
+        .nav-links a.active { font-weight: 600; border-bottom: 2px solid var(--gold); padding-bottom: 2px; }
+        .nav.scrolled .nav-links a.active { color: var(--blue-deep); }
+        .nav-links { display: flex; gap: 28px; list-style: none; }
         .nav-links a {
-          font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+          font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 500;
           text-decoration: none; transition: color 0.2s; letter-spacing: 0.2px;
           color: rgba(255,255,255,0.8);
         }
@@ -440,69 +447,135 @@ export default function BlessedHillHome({ navigate = () => {} }) {
         .reveal-delay-2  { transition-delay: 0.2s; }
         .reveal-delay-3  { transition-delay: 0.3s; }
         .reveal-delay-4  { transition-delay: 0.4s; }
-        .hamburger{
-      display:none;background:none;border:none;
-      font-size:22px;cursor:pointer;color:var(--bd);
-      padding:6px;align-items:center;justify-content:center;
+        /* ── HAMBURGER & MOBILE MENU ───────────────────────────────────── */
+        .hamburger {
+          display: none; background: none; border: none;
+          font-size: 22px; cursor: pointer; color: white;
+          padding: 8px; align-items: center; justify-content: center;
+          min-width: 44px; min-height: 44px; border-radius: 8px;
+          transition: color 0.3s;
+        }
+        .nav.scrolled .hamburger { color: var(--blue-deep); }
+
+        .mobile-menu {
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+          z-index: 100;
+          background: rgba(13, 33, 55, 0.98);
+          backdrop-filter: blur(12px);
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: flex-start;
+          gap: 8px;
+          overflow-y: auto;
+          padding: 80px 24px 40px;
+        }
+        .mobile-menu-close {
+          position: absolute; top: 20px; right: 20px;
+          background: none; border: none;
+          font-size: 24px; color: rgba(255,255,255,0.7);
+          cursor: pointer; padding: 8px;
+          min-width: 44px; min-height: 44px;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .mobile-link {
+          font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 400;
+          color: rgba(255,255,255,0.85); text-decoration: none;
+          padding: 14px 32px; border-radius: 12px;
+          width: 100%; max-width: 320px; text-align: center;
+          transition: background 0.2s, color 0.2s;
+        }
+        .mobile-link:hover { background: rgba(255,255,255,0.08); color: white; }
+        .mobile-link.active-link { color: var(--gold); font-weight: 500; }
+
         /* ── RESPONSIVE ────────────────────────────────────────────────── */
         @media (max-width: 900px) {
-          .nav-links,
-          .nav-cta { display: none; }
+          .nav { padding: 0 20px; }
+          .nav-links, .nav-cta { display: none; }
           .hamburger { display: flex; }
-          .nav-cta          { display: none; }
-          .hero-content     { padding: 120px 24px 48px; }
-          .hero-stats-inner { padding: 0 24px; flex-wrap: wrap; }
-          .stat-item        { flex: 50%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
-          .stat-item:nth-child(3),
-          .stat-item:last-child { border-bottom: none; }
-          .about            { padding: 72px 24px; }
-          .about-inner      { grid-template-columns: 1fr; gap: 60px; }
+          .nav-inner { height: 80px; gap: 16px; }
+          .nav-logo-img { height: 68px !important; }
+          .nav-logo-main { font-size: 18px; }
+          .nav-logo-sub { font-size: 11px; }
+          .hero-content { padding: 100px 20px 40px; }
+          .hero-stats-inner { padding: 0 20px; flex-wrap: wrap; }
+          .stat-item { flex: 50%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
+          .stat-item:nth-child(3), .stat-item:last-child { border-bottom: none; }
+          .about { padding: 56px 20px; }
+          .about-inner { grid-template-columns: 1fr; gap: 40px; }
           .about-text-block { padding-left: 0; }
-          .services         { padding: 72px 24px; }
-          .services-grid    { grid-template-columns: repeat(2, 1fr); }
-          .cta-strip        { padding: 72px 24px; }
-          .footer           { padding: 48px 24px 24px; }
-          .footer-inner     { grid-template-columns: 1fr; gap: 40px; }
-          .footer-bottom    { flex-direction: column; gap: 8px; text-align: center; }
+          .services { padding: 56px 20px; }
+          .services-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+          .cta-strip { padding: 56px 20px; }
+          .footer { padding: 48px 20px 24px; }
+          .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+          .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
         }
         @media (max-width: 540px) {
-          .services-grid        { grid-template-columns: 1fr; }
-          .hero-actions         { flex-direction: column; }
-          .btn-primary,
-          .btn-outline          { text-align: center; width: 100%; }
-          /* Hide decorative circles on small screens to prevent horizontal overflow */
-          .hero-circles         { display: none; }
+          .nav-inner { height: 72px; gap: 8px; }
+          .nav-logo-img { height: 56px !important; }
+          .nav-logo-main { font-size: 16px; }
+          .nav-logo-sub { font-size: 10px; letter-spacing: 1px; }
+          .services-grid { grid-template-columns: 1fr; }
+          .hero-actions { flex-direction: column; align-items: stretch; }
+          .btn-primary, .btn-outline { text-align: center; width: 100%; box-sizing: border-box; }
+          .hero-circles { display: none; }
+          .hero-title { font-size: 36px; line-height: 1.15; }
+          .section-title { font-size: 26px; }
+          .about-inner { gap: 28px; }
+          .service-card { padding: 20px 16px; }
+          .footer-inner { padding: 0; }
+          .cta-title { font-size: 24px; }
         }
       `}</style>
 
       {/* ── NAV ────────────────────────────────────────────────────────── */}
       <nav className={`nav${scrolled ? " scrolled" : ""}`}>
         <div className="nav-inner">
-          <div className="nav-logo" onClick={()=>navigate("Home")} style={{cursor:"pointer"}}>
-           <span className="nav-logo-main">Blessed Hill</span>
-           <span className="nav-logo-sub sans">Adult Family Home</span>
-            </div>
+        <div onClick={()=>navigate("Home")} style={{display:"flex", alignItems:"center", gap:"0px", cursor:"pointer",  marginLeft:"-15px"}}>
+          <img src={logo} alt="Blessed Hill" fetchPriority="high" className="nav-logo-img" style={{height:"140px", width:"auto"}} />
+          <div>
+            <div className="nav-logo-main">Blessed Hill</div>
+            <div className="nav-logo-sub sans">Adult Family Home</div>
+          </div>
+        </div>        
           <ul className="nav-links">
             {NAV_LINKS.map((label) => (
-              <li key={label}><a href="#" onClick={e=>{e.preventDefault();navigate(label);}}>{label}</a></li>
+          <li key={label}><a href="#" className={label==="Home"?"active":""} onClick={e=>{e.preventDefault();navigate(label);}}>{label}</a></li>
             ))}
           </ul>
-          <button className="nav-cta" onClick={()=>navigate("Schedule a Tour")}>Schedule a Tour</button>
+          
           <button className="hamburger" onClick={()=>setMenuOpen(o=>!o)} aria-label="Menu">
-  {menuOpen ? "✕" : "☰"}
-  {menuOpen && (
-  <div className="mobile-menu">
-    {NAV_LINKS.map(l=>(
-      <a key={l} href="#" className="mobile-link sans" onClick={e=>{e.preventDefault();navigate(l);setMenuOpen(false);}}>
-        {l}
-      </a>
-    ))}
-  </div>
-)}
-</button>
-        
-        </div>
-      </nav>
+           {menuOpen ? "✕" : "☰"}
+            </button>
+           </div>
+            </nav>
+           <AnimatePresence>
+            {menuOpen && (
+            <motion.div 
+              className="mobile-menu"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+            >
+              <button className="mobile-menu-close" onClick={()=>setMenuOpen(false)} aria-label="Close menu">✕</button>
+              {NAV_LINKS.map((l, i) => (
+                <motion.a 
+                  key={l} 
+                  href="#" 
+                  className={`mobile-link sans${l==="Home" ? " active-link" : ""}`} 
+                  onClick={e=>{e.preventDefault();navigate(l);setMenuOpen(false);}}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05, duration: 0.3 }}
+                >
+                  {l}
+                </motion.a>
+              ))}
+            </motion.div>
+            )}
+            </AnimatePresence>
+
+    
 
       {/* ── HERO ───────────────────────────────────────────────────────── */}
       <section className="hero">
@@ -632,7 +705,7 @@ export default function BlessedHillHome({ navigate = () => {} }) {
           <p className="cta-sub sans">
             Schedule a complimentary tour and see firsthand why families across King County trust Blessed Hill.
           </p>
-          <button className="btn-primary" style={{ fontSize: "16px", padding: "18px 48px" }}>
+          <button className="btn-primary" style={{ fontSize: "16px", padding: "18px 48px" }} onClick={()=>navigate("Schedule a Tour")}>
             Book a Free Tour →
           </button>
           <p className="cta-phone sans">

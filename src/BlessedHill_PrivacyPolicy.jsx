@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import logo from "./assets/bwr.png";
 
 const NAV_LINKS = ["Home", "Services", "Gallery", "Reviews", "Schedule a Tour", "Career", "Privacy Policy"];
 
@@ -84,14 +86,41 @@ export default function BlessedHillPrivacyPolicy({ navigate = () => {} }) {
         .sans{font-family:'DM Sans',sans-serif}
 
         /* NAV */
-        .nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(250,248,244,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--br);transition:box-shadow .3s;padding:0 48px}
-        .nav.scrolled{box-shadow:0 2px 20px rgba(30,80,140,.07)}
-        .nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px}
-        .nlm{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--bd);cursor:pointer}
+        .nav {
+          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+          background: rgba(255,255,255,0.97);
+          backdrop-filter: blur(12px);
+          box-shadow: 0 2px 24px rgba(30,80,140,0.10);
+          transition: background 0.4s ease, box-shadow 0.4s ease;
+          padding: 0 48px;
+        }
+        .nav.scrolled {
+          background: rgba(255,255,255,0.97);
+          backdrop-filter: blur(12px);
+          box-shadow: 0 2px 24px rgba(30,80,140,0.10);
+        }
+        .nav-inner {
+          max-width: 1280px; margin: 0 auto;
+          display: flex; align-items: center; justify-content: space-between;
+          gap: 80px;
+          height: 72px;
+        }
+        .nav-logo { display: flex; flex-direction: column; }
+        .nav-logo-main {
+          font-family: 'Playfair Display', serif;
+          font-size: 26px; font-weight: 800; line-height: 1.1; letter-spacing: -0.3px;
+          color: var(--bd);
+        }
+        .nav-logo-sub {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px; letter-spacing: 1.5px; text-transform: uppercase;
+          color: var(--bs);
+        }        .nlm{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--bd);cursor:pointer}
         .nls{font-family:'DM Sans',sans-serif;font-size:10px;color:var(--bs);letter-spacing:1.5px;text-transform:uppercase}
         .nl{display:flex;gap:28px;list-style:none}
         .nl a{font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;color:var(--tm);text-decoration:none;transition:color .2s}
         .nl a:hover{color:var(--bm)}
+        .nl a.active{color:var(--bd);font-weight:600;border-bottom:2px solid var(--gd);padding-bottom:2px}
         .ncta{background:var(--bd);color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;border:none;border-radius:50px;padding:9px 22px;cursor:pointer;transition:background .2s,transform .2s}
         .ncta:hover{background:var(--bm);transform:translateY(-1px)}
 
@@ -196,13 +225,20 @@ export default function BlessedHillPrivacyPolicy({ navigate = () => {} }) {
         .fl a:hover{color:white}
         .fbot{max-width:1280px;margin:0 auto;padding-top:22px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:rgba(255,255,255,.28)}
         .hamburger{
-        display:none;background:none;border:none;
-        font-size:22px;cursor:pointer;color:var(--bd);
-        padding:6px;align-items:center;justify-content:center;
+          display:none;background:none;border:none;
+          font-size:22px;cursor:pointer;color:var(--bd);
+          padding:8px;align-items:center;justify-content:center;
+          min-width:44px;min-height:44px;border-radius:8px;
+        }
         /* RESPONSIVE */
         @media(max-width:900px){
-          .nav{padding:0 24px}.nl,.ncta{display:none}
+          .nav{padding:0 20px}
+          .nl,.ncta{display:none}
           .hamburger{display:flex}
+          .nav-inner{height:64px;gap:12px}
+          .nav-logo-img{height:52px !important}
+          .nav-logo-main{font-size:16px}
+          .nav-logo-sub{font-size:10px}
           .page-header{padding:120px 24px 52px}
           .body-wrap{grid-template-columns:1fr;padding:40px 24px 60px;gap:40px}
           .toc{position:static;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -214,37 +250,92 @@ export default function BlessedHillPrivacyPolicy({ navigate = () => {} }) {
           .footer-inner{grid-template-columns:1fr;gap:32px}
           .fbot{flex-direction:column;gap:6px;text-align:center}
         }
+        @media(max-width:540px){
+          .nav-inner{height:56px;gap:8px}
+          .nav-logo-img{height:44px !important}
+        }
+        /* MOBILE MENU — full-screen overlay (matches Gallery) */
+        .mobile-menu{
+          position:fixed; top:0; left:0; right:0; bottom:0;
+          z-index:100;
+          background:rgba(13,33,55,0.98);
+          backdrop-filter:blur(12px);
+          display:flex; flex-direction:column;
+          align-items:center; justify-content:flex-start;
+          gap:8px;
+          overflow-y:auto;
+          padding:80px 24px 40px;
+        }
+        .mobile-menu-close{
+          position:absolute;top:20px;right:20px;
+          background:none;border:none;
+          font-size:24px;color:rgba(255,255,255,0.7);
+          cursor:pointer;padding:8px;
+          min-width:44px;min-height:44px;
+          display:flex;align-items:center;justify-content:center;
+        }
+        .mobile-link{
+          font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;
+          color:rgba(255,255,255,0.85);text-decoration:none;
+          padding:14px 32px;border-radius:12px;
+          width:100%;max-width:320px;text-align:center;
+          transition:background 0.2s,color 0.2s;
+        }
+        .mobile-link:hover{background:rgba(255,255,255,0.08);color:white}
+        .mobile-link.active-link{color:var(--gd);font-weight:500}
       `}</style>
 
       {/* NAV */}
       <nav className={`nav${scrolled?" scrolled":""}`}>
         <div className="nav-inner">
-          <div onClick={()=>navigate("Home")} style={{cursor:"pointer"}}>
-            <div className="nlm">Blessed Hill</div>
-            <div className="nls sans">Adult Family Home</div>
+          <div onClick={()=>navigate("Home")} style={{display:"flex", alignItems:"center", gap:"0px", cursor:"pointer", marginLeft:"-15px"}}>
+            <img src={logo} alt="Blessed Hill" className="nav-logo-img" style={{height:"140px", width:"auto"}} />
+            <div>
+              <div className="nav-logo-main">Blessed Hill</div>
+              <div className="nav-logo-sub sans">Adult Family Home</div>
+            </div>
           </div>
           <ul className="nl">
-            {NAV_LINKS.map(l=>(
-              <li key={l}>
-                <a href="#" onClick={e=>{e.preventDefault();navigate(l);}}>{l}</a>
+            {NAV_LINKS.map((label) => (
+              <li key={label}>
+                <a href="#" className={label==="Privacy Policy"?"active":""} onClick={e=>{e.preventDefault();navigate(label);}}>
+                  {label}
+                </a>
               </li>
             ))}
           </ul>
-          <button className="ncta sans" onClick={()=>navigate("Schedule a Tour")}>Schedule a Tour</button>
-          <button className="hamburger" onClick={()=>setMenuOpen(o=>!o)} aria-label="Menu">
-  {menuOpen ? "✕" : "☰"}
-  {menuOpen && (
-  <div className="mobile-menu">
-    {NAV_LINKS.map(l=>(
-      <a key={l} href="#" className="mobile-link sans" onClick={e=>{e.preventDefault();navigate(l);setMenuOpen(false);}}>
-        {l}
-      </a>
-    ))}
-  </div>
-)}
-</button>
+          
+          <button className="hamburger" style={{marginLeft:"auto"}}onClick={()=>setMenuOpen(o=>!o)} aria-label="Menu">
+            {menuOpen ? "✕" : "☰"}
+          </button>
         </div>
       </nav>
+      <AnimatePresence>
+      {menuOpen && (
+      <motion.div 
+        className="mobile-menu"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+      >
+        <button className="mobile-menu-close" onClick={()=>setMenuOpen(false)} aria-label="Close menu">✕</button>
+        {NAV_LINKS.map((l, i) => (
+          <motion.a 
+            key={l} 
+            href="#" 
+            className={`mobile-link sans${l==="Privacy Policy" ? " active-link" : ""}`} 
+            onClick={e=>{e.preventDefault();navigate(l);setMenuOpen(false);}}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05, duration: 0.3 }}
+          >
+            {l}
+          </motion.a>
+        ))}
+      </motion.div>
+      )}
+      </AnimatePresence>
 
       {/* PAGE HEADER */}
       <header className="page-header">
@@ -286,7 +377,7 @@ export default function BlessedHillPrivacyPolicy({ navigate = () => {} }) {
             We are regulated by the state of Washington under the law{" "}
             <a href="https://app.leg.wa.gov/rcw/default.aspx?cite=70.128.130" target="_blank" rel="noreferrer">RCW 70.128.130</a>.
             In addition to the{" "}
-            <a href="https://www.cdc.gov/phlp/publications/topic/hipaa.html" target="_blank" rel="noreferrer">
+            <a href="https://www.hhs.gov/hipaa/index.html" target="_blank" rel="noreferrer">
               Health Insurance Portability and Accountability Act
             </a>{" "}
             of 1996 (HIPAA), please review our full privacy policy below.

@@ -11,7 +11,9 @@ export default function BlessedHillAdmin({ onLogout }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMsg, setPasswordMsg] = useState("");
-  const [selectedApp, setSelectedApp] = useState(null);
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [emailMsg, setEmailMsg] = useState("");  const [selectedApp, setSelectedApp] = useState(null);
   const [tours, setTours] = useState([]);
   const [selectedTour, setSelectedTour] = useState(null);
   useEffect(() => { fetchAll(); }, []);
@@ -70,15 +72,31 @@ const fetchAll = async () => {
     setSelectedApp(null);
   };
 
-  const changePassword = async () => {
-    if (!newPassword.trim()) return setPasswordMsg("Please enter a new password.");
-    if (newPassword !== confirmPassword) return setPasswordMsg("Passwords do not match.");
-    if (newPassword.length < 8) return setPasswordMsg("Password must be at least 8 characters.");
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) return setPasswordMsg("Error: " + error.message);
-    setPasswordMsg("✓ Password updated successfully!");
-    setNewPassword(""); setConfirmPassword("");
-    setTimeout(() => { setPasswordMsg(""); setShowPasswordForm(false); }, 3000);
+const changePassword = async () => {
+  if (!newPassword.trim()) return setPasswordMsg("Please enter a new password.");
+  if (newPassword.length < 8) return setPasswordMsg("Password must be at least 8 characters.");
+  if (!/[A-Z]/.test(newPassword)) return setPasswordMsg("Password must contain at least one uppercase letter.");
+  if (!/[a-z]/.test(newPassword)) return setPasswordMsg("Password must contain at least one lowercase letter.");
+  if (!/[0-9]/.test(newPassword)) return setPasswordMsg("Password must contain at least one number.");
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword)) return setPasswordMsg("Password must contain at least one special character (!@#$%^&* etc).");
+  if (newPassword !== confirmPassword) return setPasswordMsg("Passwords do not match.");
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) return setPasswordMsg("Error: " + error.message);
+  setPasswordMsg("✓ Password updated successfully!");
+  setNewPassword(""); setConfirmPassword("");
+  setTimeout(() => { setPasswordMsg(""); setShowPasswordForm(false); }, 3000);
+};
+
+const changeEmail = async () => {
+    if (!newEmail.trim()) return setEmailMsg("Please enter an email address.");
+    if (!/\S+@\S+\.\S+/.test(newEmail)) return setEmailMsg("Please enter a valid email format (e.g. name@domain.com).");
+    const { data: session } = await supabase.auth.getSession();
+    if (!session?.session) return setEmailMsg("You must be logged in to change your email.");
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
+    if (error) return setEmailMsg("Error: " + error.message);
+    setEmailMsg("✓ Confirmation sent to " + newEmail + ". Check your inbox to confirm the change.");
+    setNewEmail("");
+    setTimeout(() => { setEmailMsg(""); setShowEmailForm(false); }, 4000);
   };
 
   const logout = async () => {
@@ -211,8 +229,8 @@ const fetchAll = async () => {
           </div>
         </div>
         <div className="admin-bar-right">
-          <button className="btn-bar btn-pwd sans" onClick={()=>setShowPasswordForm(true)}>🔑 Change Password</button>
-          <button className="btn-bar btn-logout sans" onClick={logout}>Sign Out</button>
+      <button className="btn-bar btn-pwd sans" onClick={()=>setShowPasswordForm(true)}>🔑 Change Password</button>
+      <button className="btn-bar btn-pwd sans" onClick={()=>setShowEmailForm(true)}>✉️ Change Email</button>          <button className="btn-bar btn-logout sans" onClick={logout}>Sign Out</button>
         </div>
       </div>
 
@@ -473,20 +491,56 @@ const fetchAll = async () => {
       {showPasswordForm && (
         <div className="modal-overlay" onClick={()=>setShowPasswordForm(false)}>
           <div className="modal" onClick={e=>e.stopPropagation()}>
-            <h2 className="modal-title">Change Password</h2>
-            <label className="lbl sans">New Password</label>
-            <input className="inp sans" type="password" placeholder="Min. 8 characters" value={newPassword} onChange={e=>setNewPassword(e.target.value)} />
-            <label className="lbl sans">Confirm Password</label>
-            <input className="inp sans" type="password" placeholder="Repeat password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} />
-            {passwordMsg && <p className="pwd-msg sans" style={{color:passwordMsg.startsWith("✓")?"#1a6644":"#c0392b"}}>{passwordMsg}</p>}
+    <h2 className="modal-title">Change Password</h2>
+    <label className="lbl sans">New Password</label>
+    <input className="inp sans" type="password" placeholder="Uppercase, lowercase, number, symbol" value={newPassword} onChange={e=>setNewPassword(e.target.value)} />
+    {newPassword.length > 0 && (
+      <div style={{marginBottom:14}}>
+        <div style={{display:"flex", gap:4, marginBottom:6}}>
+          {[newPassword.length>=8, /[A-Z]/.test(newPassword), /[a-z]/.test(newPassword), /[0-9]/.test(newPassword), /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword)].map((met,i)=>(
+            <div key={i} style={{flex:1,height:4,borderRadius:2,background:met?"#1a6644":"#dce6f0",transition:"background 0.2s"}} />
+          ))}
+        </div>
+        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:"#4a6278"}}>
+          {[[/[A-Z]/.test(newPassword),"Uppercase"],[/[a-z]/.test(newPassword),"Lowercase"],[/[0-9]/.test(newPassword),"Number"],[/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword),"Symbol"],[newPassword.length>=8,"8+ chars"]].map(([met,label],i)=>(
+            <span key={i} style={{marginRight:10,color:met?"#1a6644":"#c0392b"}}>{met?"✓":"✗"} {label}</span>
+          ))}
+        </div>
+      </div>
+    )}
+    <label className="lbl sans">Confirm Password</label>
+    <input className="inp sans" type="password" placeholder="Repeat password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} />
+    {confirmPassword.length > 0 && (
+      <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,marginBottom:10,color:newPassword===confirmPassword?"#1a6644":"#c0392b"}}>
+        {newPassword===confirmPassword?"✓ Passwords match":"✗ Passwords do not match"}
+      </p>
+    )}
+    {passwordMsg && <p className="pwd-msg sans" style={{color:passwordMsg.startsWith("✓")?"#1a6644":"#c0392b"}}>{passwordMsg}</p>}
+    <div className="modal-actions">
+      <button className="btn-cancel sans" onClick={()=>setShowPasswordForm(false)}>Cancel</button>
+      <button className="btn-save sans" onClick={changePassword}>Save Password</button>
+    </div>          </div>
+        </div>
+      )}
+    {showEmailForm && (
+        <div className="modal-overlay" onClick={()=>setShowEmailForm(false)}>
+          <div className="modal" onClick={e=>e.stopPropagation()}>
+            <h2 className="modal-title">Change Email</h2>
+            <label className="lbl sans">New Email Address</label>
+            <input className="inp sans" type="email" placeholder="name@domain.com" value={newEmail} onChange={e=>setNewEmail(e.target.value)} />
+            {newEmail.length > 0 && (
+              <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,marginBottom:10,color:/\S+@\S+\.\S+/.test(newEmail)?"#1a6644":"#c0392b"}}>
+                {/\S+@\S+\.\S+/.test(newEmail)?"✓ Valid email format":"✗ Enter a valid email (e.g. name@domain.com)"}
+              </p>
+            )}
+            {emailMsg && <p className="pwd-msg sans" style={{color:emailMsg.startsWith("✓")?"#1a6644":"#c0392b"}}>{emailMsg}</p>}
             <div className="modal-actions">
-              <button className="btn-cancel sans" onClick={()=>setShowPasswordForm(false)}>Cancel</button>
-              <button className="btn-save sans" onClick={changePassword}>Save Password</button>
+              <button className="btn-cancel sans" onClick={()=>setShowEmailForm(false)}>Cancel</button>
+              <button className="btn-save sans" onClick={changeEmail}>Update Email</button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }

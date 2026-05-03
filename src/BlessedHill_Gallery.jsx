@@ -15,19 +15,19 @@ const CATEGORIES = [
 // Masonry layout: span = how many rows tall (1 = normal, 2 = tall)
 const PHOTOS = [
   { id:1,  cat:"rooms",      span:2, src:new URL('./assets/bedroom.jpeg', import.meta.url).href, label:"Private Room — Sunlit & Spacious", sub:"Furnished with warmth and personal touches" },
-  { id:4,  cat:"outdoor",    span:2, src:new URL('./assets/gallery/outdoor.jpeg', import.meta.url).href, label:"Outdoor Area", sub:"Peaceful outdoor space in our backyard" },
-  { id:5,  cat:"common", span:1, src:new URL('./assets/gallery/indoor.jpeg', import.meta.url).href, label:"Common Area", sub:"Where residents gather & connect daily"},
-  { id:6,  cat:"rooms",      span:1, src:new URL('./assets/gallery/washroom.jpeg', import.meta.url).href, label:"ADA-Compliant Bathroom", sub:"Safe, accessible, and spotlessly clean" },
-  { id:7,  cat:"rooms",       span:2, src:new URL('./assets/gallery/bedroom2.jpeg', import.meta.url).href, label:"Private Room — Sunlit & Spacious", sub:"Furnished with warmth and personal touches" },
-  { id:8,  cat:"dining",      span:1, src:new URL('./assets/gallery/diningarea.jpeg', import.meta.url).href, label:"Dining Room — Morning Light", sub:"Where all three daily meals are shared" },
-  { id:9,  cat:"rooms",     span:1, src:new URL('./assets/gallery/indoor2.jpeg', import.meta.url).href, label:"Private Room — Sunlit & Spacious", sub:"Furnished with warmth and personal touches" },
-  { id:11, cat:"outdoor",    span:1, src:new URL('./assets/gallery/outdoor1.jpeg', import.meta.url).href, label:"Morning Walk Path", sub:"Safe walking paths along the perimeter" },
-  { id:12, cat:"rooms",      span:2, src:new URL('./assets/gallery/corridor.jpeg', import.meta.url).href, label:"Bright & Airy", sub:"Comfortable, safe, and spotlessly clean" },
-  { id:13, cat:"dining",       span:1, src:new URL('./assets/gallery/diningarea2.jpeg', import.meta.url).href, label:"Dining Room — Morning Light", sub:"Where all three daily meals are shared" },
-  { id:14, cat:"common",      span:1, src:new URL('./assets/gallery/sittingarea2.jpeg', import.meta.url).href, label:"Common Area", sub:"Where residents gather & connect daily" },
-  { id:15, cat:"outdoor", span:2, src:new URL('./assets/gallery/outdoor2.jpeg', import.meta.url).href, label:"Outdoor Area", sub:"Peaceful outdoor space in our backyard" },
-  { id:16, cat:"outdoor",     span:1, src:new URL('./assets/gallery/outdoor3.jpeg', import.meta.url).href, label:"Outdoor Area", sub:"Peaceful outdoor space in our backyard" },
-  { id:17, cat:"outdoor",       span:1, src:new URL('./assets/gallery/outdoor4.jpeg', import.meta.url).href, label:"Outdoor Area", sub:"Peaceful outdoor space in our backyard" },
+  { id:4,  cat:"outdoor",    span:2, src:new URL('./assets/outdoor.jpeg', import.meta.url).href, label:"Outdoor Area", sub:"Peaceful outdoor space in our backyard" },
+  { id:5,  cat:"common", span:1, src:new URL('./assets/indoor.jpeg', import.meta.url).href, label:"Common Area", sub:"Where residents gather & connect daily"},
+  { id:6,  cat:"rooms",      span:1, src:new URL('./assets/washroom.jpeg', import.meta.url).href, label:"ADA-Compliant Bathroom", sub:"Safe, accessible, and spotlessly clean" },
+  { id:7,  cat:"rooms",       span:2, src:new URL('./assets/bedroom2.jpeg', import.meta.url).href, label:"Private Room — Sunlit & Spacious", sub:"Furnished with warmth and personal touches" },
+  { id:8,  cat:"dining",      span:1, src:new URL('./assets/diningarea.jpeg', import.meta.url).href, label:"Dining Room — Morning Light", sub:"Where all three daily meals are shared" },
+  { id:9,  cat:"rooms",     span:1, src:new URL('./assets/indoor2.jpeg', import.meta.url).href, label:"Private Room — Sunlit & Spacious", sub:"Furnished with warmth and personal touches" },
+  { id:11, cat:"outdoor",    span:1, src:new URL('./assets/outdoor1.jpeg', import.meta.url).href, label:"Morning Walk Path", sub:"Safe walking paths along the perimeter" },
+  { id:12, cat:"rooms",      span:2, src:new URL('./assets/corridor.jpeg', import.meta.url).href, label:"Bright & Airy", sub:"Comfortable, safe, and spotlessly clean" },
+  { id:13, cat:"dining",       span:1, src:new URL('./assets/diningarea2.jpeg', import.meta.url).href, label:"Dining Room — Morning Light", sub:"Where all three daily meals are shared" },
+  { id:14, cat:"common",      span:1, src:new URL('./assets/sittingarea2.jpeg', import.meta.url).href, label:"Common Area", sub:"Where residents gather & connect daily" },
+  { id:15, cat:"outdoor", span:2, src:new URL('./assets/outdoor2.jpeg', import.meta.url).href, label:"Outdoor Area", sub:"Peaceful outdoor space in our backyard" },
+  { id:16, cat:"outdoor",     span:1, src:new URL('./assets/outdoor3.jpeg', import.meta.url).href, label:"Outdoor Area", sub:"Peaceful outdoor space in our backyard" },
+  { id:17, cat:"outdoor",       span:1, src:new URL('./assets/outdoor4.jpeg', import.meta.url).href, label:"Outdoor Area", sub:"Peaceful outdoor space in our backyard" },
 ];
 
 export default function BlessedHillGallery({ navigate = () => {} }) {

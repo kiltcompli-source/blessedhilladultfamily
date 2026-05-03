@@ -5,35 +5,29 @@ import logo from "./assets/bwr.png";
 const NAV_LINKS = ["Home", "Services", "Gallery", "Reviews", "Schedule a Tour", "Career", "Privacy Policy"];
 
 const CATEGORIES = [
-  { id: "all",        label: "All Photos",    icon: "⊞" },
-  { id: "rooms",      label: "Rooms",         icon: "🛏️" },
-  { id: "common",     label: "Common Areas",  icon: "🛋️" },
-  { id: "meals",      label: "Meals",         icon: "🍽️" },
-  { id: "activities", label: "Activities",    icon: "🎨" },
-  { id: "outdoor",    label: "Outdoor",       icon: "🌿" },
-  { id: "care",       label: "Care & Staff",  icon: "💙" },
+  { id: "all",        label: "All Photos",     },
+  { id: "rooms",      label: "Rooms",         },
+  { id: "common",     label: "Common Areas",   },
+  { id: "outdoor",    label: "Outdoor",        },
+  { id: "dining",     label: "dining",         },
 ];
 
 // Masonry layout: span = how many rows tall (1 = normal, 2 = tall)
 const PHOTOS = [
-  { id:1,  cat:"rooms",      span:2, icon:"🛏️", label:"Private Room — Sunlit & Spacious",      gradient:"linear-gradient(145deg,#d4e6f1,#a9cce3)", sub:"Furnished with warmth and personal touches" },
-  { id:2,  cat:"common",     span:1, icon:"🛋️", label:"Living Room",                           gradient:"linear-gradient(145deg,#fde8d8,#f0b27a)", sub:"Where residents gather & connect daily" },
-  { id:3,  cat:"meals",      span:1, icon:"🍽️", label:"Breakfast Service",                     gradient:"linear-gradient(145deg,#d5f5e3,#a9dfbf)", sub:"Fresh, nutritious meals every morning" },
-  { id:4,  cat:"outdoor",    span:2, icon:"🌿", label:"Garden Patio",                          gradient:"linear-gradient(145deg,#d0ece7,#a2d9ce)", sub:"Peaceful outdoor space in our backyard" },
-  { id:5,  cat:"activities", span:1, icon:"🎨", label:"Art & Crafts Session",                  gradient:"linear-gradient(145deg,#f9ebea,#f1948a)", sub:"Weekly creative activities for all" },
-  { id:6,  cat:"rooms",      span:1, icon:"🚿", label:"ADA-Compliant Bathroom",                gradient:"linear-gradient(145deg,#d6eaf8,#a9cce3)", sub:"Safe, accessible, and spotlessly clean" },
-  { id:7,  cat:"care",       span:2, icon:"💙", label:"Caregiver & Resident Moment",           gradient:"linear-gradient(145deg,#e8daef,#c39bd3)", sub:"Genuine bonds built through daily care" },
-  { id:8,  cat:"meals",      span:1, icon:"☕", label:"Afternoon Coffee & Tea",                gradient:"linear-gradient(145deg,#fef9e7,#f9e79f)", sub:"A daily ritual residents look forward to" },
-  { id:9,  cat:"common",     span:1, icon:"📚", label:"Reading Nook",                          gradient:"linear-gradient(145deg,#fdebd0,#f0b27a)", sub:"Quiet corner stocked with books & puzzles" },
-  { id:10, cat:"activities", span:1, icon:"🎵", label:"Music Therapy",                        gradient:"linear-gradient(145deg,#d5f5e3,#82e0aa)", sub:"Weekly sessions with a visiting musician" },
-  { id:11, cat:"outdoor",    span:1, icon:"☀️", label:"Morning Walk Path",                    gradient:"linear-gradient(145deg,#d4efdf,#a9dfbf)", sub:"Safe walking paths along the perimeter" },
-  { id:12, cat:"rooms",      span:2, icon:"🪟", label:"Shared Room — Bright & Airy",          gradient:"linear-gradient(145deg,#d6eaf8,#85c1e9)", sub:"Comfortable shared option with ample light" },
-  { id:13, cat:"care",       span:1, icon:"💊", label:"Medication Management",                 gradient:"linear-gradient(145deg,#e8daef,#bb8fce)", sub:"Precise daily administration by trained staff" },
-  { id:14, cat:"meals",      span:1, icon:"🥗", label:"Lunch — Balanced & Fresh",             gradient:"linear-gradient(145deg,#d5f5e3,#a9dfbf)", sub:"Tailored to each resident's dietary needs" },
-  { id:15, cat:"activities", span:2, icon:"🃏", label:"Game Afternoon",                       gradient:"linear-gradient(145deg,#fde8d8,#f5b7b1)", sub:"Cards, board games & friendly competition" },
-  { id:16, cat:"common",     span:1, icon:"🌅", label:"Dining Room — Morning Light",          gradient:"linear-gradient(145deg,#fef9e7,#fad7a0)", sub:"Where all three daily meals are shared" },
-  { id:17, cat:"care",       span:1, icon:"🩺", label:"Health Check — Weekly Vitals",         gradient:"linear-gradient(145deg,#d6eaf8,#a9cce3)", sub:"Routine monitoring by our nursing staff" },
-  { id:18, cat:"outdoor",    span:1, icon:"🌸", label:"Front Garden in Bloom",                gradient:"linear-gradient(145deg,#fce4ec,#f48fb1)", sub:"Seasonal planting tended by residents" },
+  { id:1,  cat:"rooms",      span:2, src:new URL('./assets/gallery/bedroom.jpeg', import.meta.url).href, label:"Private Room — Sunlit & Spacious", sub:"Furnished with warmth and personal touches" },
+  { id:4,  cat:"outdoor",    span:2, src:new URL('./assets/gallery/outdoor.jpeg', import.meta.url).href, label:"Outdoor Area", sub:"Peaceful outdoor space in our backyard" },
+  { id:5,  cat:"common", span:1, src:new URL('./assets/gallery/indoor.jpeg', import.meta.url).href, label:"Common Area", sub:"Where residents gather & connect daily"},
+  { id:6,  cat:"rooms",      span:1, src:new URL('./assets/gallery/washroom.jpeg', import.meta.url).href, label:"ADA-Compliant Bathroom", sub:"Safe, accessible, and spotlessly clean" },
+  { id:7,  cat:"rooms",       span:2, src:new URL('./assets/gallery/bedroom2.jpeg', import.meta.url).href, label:"Private Room — Sunlit & Spacious", sub:"Furnished with warmth and personal touches" },
+  { id:8,  cat:"dining",      span:1, src:new URL('./assets/gallery/diningarea.jpeg', import.meta.url).href, label:"Dining Room — Morning Light", sub:"Where all three daily meals are shared" },
+  { id:9,  cat:"rooms",     span:1, src:new URL('./assets/gallery/indoor2.jpeg', import.meta.url).href, label:"Private Room — Sunlit & Spacious", sub:"Furnished with warmth and personal touches" },
+  { id:11, cat:"outdoor",    span:1, src:new URL('./assets/gallery/outdoor1.jpeg', import.meta.url).href, label:"Morning Walk Path", sub:"Safe walking paths along the perimeter" },
+  { id:12, cat:"rooms",      span:2, src:new URL('./assets/gallery/corridor.jpeg', import.meta.url).href, label:"Bright & Airy", sub:"Comfortable, safe, and spotlessly clean" },
+  { id:13, cat:"dining",       span:1, src:new URL('./assets/gallery/diningarea2.jpeg', import.meta.url).href, label:"Dining Room — Morning Light", sub:"Where all three daily meals are shared" },
+  { id:14, cat:"common",      span:1, src:new URL('./assets/gallery/sittingarea2.jpeg', import.meta.url).href, label:"Common Area", sub:"Where residents gather & connect daily" },
+  { id:15, cat:"outdoor", span:2, src:new URL('./assets/gallery/outdoor2.jpeg', import.meta.url).href, label:"Outdoor Area", sub:"Peaceful outdoor space in our backyard" },
+  { id:16, cat:"outdoor",     span:1, src:new URL('./assets/gallery/outdoor3.jpeg', import.meta.url).href, label:"Outdoor Area", sub:"Peaceful outdoor space in our backyard" },
+  { id:17, cat:"outdoor",       span:1, src:new URL('./assets/gallery/outdoor4.jpeg', import.meta.url).href, label:"Outdoor Area", sub:"Peaceful outdoor space in our backyard" },
 ];
 
 export default function BlessedHillGallery({ navigate = () => {} }) {
@@ -204,6 +198,7 @@ export default function BlessedHillGallery({ navigate = () => {} }) {
           letter-spacing:1px;text-transform:uppercase;
           background:rgba(255,255,255,0.9);backdrop-filter:blur(6px);
           color:var(--bd);border-radius:50px;padding:4px 10px;
+           display:none;
         }
 
         /* Hover overlay */
@@ -213,6 +208,9 @@ export default function BlessedHillGallery({ navigate = () => {} }) {
           opacity:0;transition:opacity .3s ease;
           display:flex;flex-direction:column;justify-content:flex-end;padding:20px;
         }
+          @media (max-width:768px){
+        .card-overlay{display:none}
+}
         .card-label{
           font-family:'Playfair Display',serif;font-size:15px;font-weight:600;
           color:white;line-height:1.25;margin-bottom:4px;
@@ -481,9 +479,13 @@ export default function BlessedHillGallery({ navigate = () => {} }) {
               >
                 <div className={`photo-img ${photo.span===2?"h2":"h1"}`}>
                   {/* Gradient placeholder — swap src= on real img tag when photos are ready */}
-                  <div className="card-bg card-zoom" style={{ background: photo.gradient }} />
-                  <div className="card-icon" aria-hidden="true">{photo.icon}</div>
-                  <div className="card-chip sans">
+                 <img 
+                  src={photo.src} 
+                  alt={photo.label}
+                  className="card-bg card-zoom"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />  
+                <div className="card-chip sans">
                     {CATEGORIES.find(c=>c.id===photo.cat)?.label}
                   </div>
                   <div className="card-overlay">
@@ -514,9 +516,13 @@ export default function BlessedHillGallery({ navigate = () => {} }) {
           <div className="lb-content">
             <div className="lb-image">
               <div className="lb-img-inner">
-                <div className="lb-bg" style={{ background: lbPhoto.gradient }}>
-                  <span className="lb-icon">{lbPhoto.icon}</span>
-                </div>
+                <img 
+              src={lbPhoto.src} 
+              alt={lbPhoto.label}
+              className="lb-bg"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+            </div>
               </div>
             </div>
 
@@ -543,7 +549,7 @@ export default function BlessedHillGallery({ navigate = () => {} }) {
               >→</button>
             </div>
           </div>
-        </div>
+      
       )}
 
       {/* CTA BAND */}

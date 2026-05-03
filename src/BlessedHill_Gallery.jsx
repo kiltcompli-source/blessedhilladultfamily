@@ -14,7 +14,7 @@ const CATEGORIES = [
 
 // Masonry layout: span = how many rows tall (1 = normal, 2 = tall)
 const PHOTOS = [
-  { id:1,  cat:"rooms",      span:2, src:new URL('./assets/gallery/bedroom.jpeg', import.meta.url).href, label:"Private Room — Sunlit & Spacious", sub:"Furnished with warmth and personal touches" },
+  { id:1,  cat:"rooms",      span:2, src:new URL('./assets/bedroom.jpeg', import.meta.url).href, label:"Private Room — Sunlit & Spacious", sub:"Furnished with warmth and personal touches" },
   { id:4,  cat:"outdoor",    span:2, src:new URL('./assets/gallery/outdoor.jpeg', import.meta.url).href, label:"Outdoor Area", sub:"Peaceful outdoor space in our backyard" },
   { id:5,  cat:"common", span:1, src:new URL('./assets/gallery/indoor.jpeg', import.meta.url).href, label:"Common Area", sub:"Where residents gather & connect daily"},
   { id:6,  cat:"rooms",      span:1, src:new URL('./assets/gallery/washroom.jpeg', import.meta.url).href, label:"ADA-Compliant Bathroom", sub:"Safe, accessible, and spotlessly clean" },
